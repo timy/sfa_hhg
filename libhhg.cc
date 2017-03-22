@@ -28,19 +28,17 @@ extern "C" void calc_hhg(long nt, double dt, double* Ef, double* dout) {
   for (int it = 0; it < nt; it ++) {
     d[it] = 0.;
     complex S = 0.;
-    for (int itau = 0; itau < it; itau ++) {
+    for (int itau = 1; itau <= it; itau ++) {
       int itp = it - itau; // ionization time
       double ks;
-      if (itau != 0)
-        ks = (alpha[itp] - alpha[it]) / (itau * dt);
-      else
-        ks = 0.;
+      ks = (alpha[itp] - alpha[it]) / (itau * dt);
       double k = ks + Af[itp];
       double integrand = 0.5 * k * k + Ip;
       if (itau == 0 || itau == it)
         integrand *= 0.5;
       S += integrand * (-dt);
-      d[it] += conj(dipole(ks + Af[it])) * dipole(ks + Af[itp]) * Ef[itp] * exp(-complex(0., 1.) * S);
+      d[it] += conj(dipole(ks + Af[it])) * dipole(ks + Af[itp]) * Ef[itp] * exp(-complex(0., 1.) * S)
+        * pow((2.*M_PI/(itau * dt)), 1.5);
     }
     d[it] *= complex(0., 1.) * (-dt);
     dout[it] = d[it].real();

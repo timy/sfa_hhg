@@ -4,11 +4,11 @@
 #define complex std::complex<double>
 #define Ip 0.5
 #define w0 0.057
-#define sigma 206.7
+#define sigma 1240.2
 #define E0 0.08
 #define nt 10001
-#define t0 -500.
-#define t1 500.
+#define t0 -3000.
+#define t1  3000.
 
 inline complex dipole(double k) {
   double dnom = (k*k + 2*Ip);
@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
   double time[nt];
   double Ef[nt], Af[nt], alpha[nt];
   double dt = (t1 - t0) / (nt - 1.);
+  printf("dt: %lf\n", dt);
   for (int it = 0; it < nt; it ++) {
     time[it] = t0 + it * dt;
     Ef[it] = E0 * exp( - time[it] * time[it] / (sigma * sigma) ) * cos( w0 * time[it] );
@@ -34,19 +35,17 @@ int main(int argc, char* argv[]) {
   for (int it = 0; it < nt; it ++) {
     d[it] = 0.;
     complex S = 0.;
-    for (int itau = 0; itau < it; itau ++) {
+    for (int itau = 1; itau <= it; itau ++) {
       int itp = it - itau; // ionization time
       double ks;
-      if (itau != 0)
-        ks = (alpha[itp] - alpha[it]) / (itau * dt);
-      else
-        ks = 0.;
+      ks = (alpha[itp] - alpha[it]) / (itau * dt);
       double k = ks + Af[itp];
       double integrand = 0.5 * k * k + Ip;
       if (itau == 0 || itau == it)
         integrand *= 0.5;
       S += integrand * (-dt);
-      d[it] += conj(dipole(ks + Af[it])) * dipole(ks + Af[itp]) * Ef[itp] * exp(-complex(0., 1.) * S);
+      d[it] += conj(dipole(ks + Af[it])) * dipole(ks + Af[itp]) * Ef[itp] * exp(-complex(0., 1.) * S)
+        * pow((2.*M_PI/(itau * dt)), 1.5);
     }
     d[it] *= complex(0., 1.) * (-dt);
     if (it % 100 == 0) printf("progress: %f\n", 1.0 * it / nt);
