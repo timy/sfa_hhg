@@ -37,8 +37,7 @@ int main(int argc, char* argv[]) {
     complex S = 0.;
     for (int itau = 1; itau <= it; itau ++) {
       int itp = it - itau; // ionization time
-      double ks;
-      ks = (alpha[itp] - alpha[it]) / (itau * dt);
+      double ks = (alpha[itp] - alpha[it]) / (itau * dt);
       double k = ks + Af[itp];
       double integrand = 0.5 * k * k + Ip;
       if (itau == 0 || itau == it)
@@ -53,7 +52,7 @@ int main(int argc, char* argv[]) {
 
   FILE* file = fopen("data.dat", "w");
   for (int it = 0; it < nt; it ++)
-    fprintf(file, "%lf %lf %lf %lf %lf %lf\n",
+    fprintf(file, "%le %le %le %le %le %le\n",
             time[it], Ef[it], Af[it], alpha[it], d[it].real(), d[it].imag());
   fclose(file);
   return 0;
